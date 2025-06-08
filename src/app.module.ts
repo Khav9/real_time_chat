@@ -3,8 +3,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { ServersModule } from './servers/servers.module';
 import { User } from './typeorm/entities/User';
 import { RefreshToken } from './typeorm/entities/RefreshToken';
+import { Server } from './typeorm/entities/Server';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { RefreshToken } from './typeorm/entities/RefreshToken';
           username: config.get<string>('DB_USERNAME'),
           password: config.get<string>('DB_PASSWORD'),
           database: config.get<string>('DB_NAME'),
-          entities: [User, RefreshToken],
+          entities: [User, RefreshToken, Server],
           autoLoadEntities: true,
           synchronize: config.get<boolean>('DB_SYNCHRONIZE'),
         };
@@ -32,6 +34,7 @@ import { RefreshToken } from './typeorm/entities/RefreshToken';
     }),
     AuthModule,
     UsersModule,
+    ServersModule,
   ],
 })
 export class AppModule {}
