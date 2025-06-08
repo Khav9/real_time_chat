@@ -1,3 +1,109 @@
+// import {
+//   Body,
+//   Controller,
+//   Get,
+//   HttpCode,
+//   HttpStatus,
+//   Post,
+//   Request,
+//   Res,
+//   UseGuards,
+//   UnauthorizedException,
+//   ValidationPipe,
+// } from '@nestjs/common';
+// import { AuthGuard } from './auth.guard';
+// import { AuthService } from './auth.service';
+// import { Public } from './public.decorator';
+// import { Response } from 'express';
+// import { LoginDto, RegisterDto } from './dto/auth.dto';
+// import {
+//   ApiTags,
+//   ApiOperation,
+//   ApiResponse,
+//   ApiBearerAuth,
+// } from '@nestjs/swagger';
+
+// @ApiTags('Authentication')
+// @Controller('auth')
+// export class AuthController {
+//   constructor(private authService: AuthService) {}
+
+//   @Public()
+//   @ApiOperation({ summary: 'User login' })
+//   @ApiResponse({ status: 200, description: 'User successfully logged in' })
+//   @ApiResponse({ status: 401, description: 'Unauthorized' })
+//   @HttpCode(HttpStatus.OK)
+//   @Post('login')
+//   signIn(
+//     @Body(new ValidationPipe({ transform: true })) signInDto: LoginDto,
+//     @Res({ passthrough: true }) res: Response,
+//   ) {
+//     return this.authService.signIn(signInDto.username, signInDto.password, res);
+//   }
+
+//   @Public()
+//   @ApiOperation({ summary: 'User registration' })
+//   @ApiResponse({ status: 201, description: 'User successfully registered' })
+//   @ApiResponse({ status: 400, description: 'Bad request' })
+//   @HttpCode(HttpStatus.OK)
+//   @Post('register')
+//   register(
+//     @Body(new ValidationPipe({ transform: true })) registerDto: RegisterDto,
+//     @Res({ passthrough: true }) res: Response,
+//   ) {
+//     return this.authService.register(
+//       registerDto.username,
+//       registerDto.password,
+//       registerDto.email,
+//       res,
+//     );
+//   }
+
+//   @Public()
+//   @ApiOperation({ summary: 'Refresh access token' })
+//   @ApiResponse({ status: 200, description: 'Token successfully refreshed' })
+//   @ApiResponse({ status: 401, description: 'Unauthorized' })
+//   @HttpCode(HttpStatus.OK)
+//   @Post('refresh')
+//   refreshTokens(@Request() req, @Res({ passthrough: true }) res: Response) {
+//     const refreshToken = req.cookies.refresh_token;
+//     if (!refreshToken) {
+//       throw new UnauthorizedException('No refresh token provided');
+//     }
+//     return this.authService.refreshTokens(refreshToken, res);
+//   }
+
+//   @UseGuards(AuthGuard)
+//   @ApiBearerAuth()
+//   @ApiOperation({ summary: 'User logout' })
+//   @ApiResponse({ status: 200, description: 'User successfully logged out' })
+//   @HttpCode(HttpStatus.OK)
+//   @Post('logout')
+//   logout(@Request() req, @Res({ passthrough: true }) res: Response) {
+//     const refreshToken = req.cookies.refresh_token;
+//     return this.authService.logout(refreshToken, req.user.sub, res);
+//   }
+
+//   @UseGuards(AuthGuard)
+//   @ApiBearerAuth()
+//   @ApiOperation({ summary: 'Get user profile' })
+//   @ApiResponse({
+//     status: 200,
+//     description: 'User profile retrieved successfully',
+//   })
+//   @ApiResponse({ status: 401, description: 'Unauthorized' })
+//   @Get('profile')
+//   async getProfile(@Request() req) {
+//     const user = await this.authService.getUserProfile(req.user.sub);
+//     return {
+//       user_id: user.user_id,
+//       username: user.username,
+//       email: user.email,
+//       created_at: user.created_at,
+//       updated_at: user.updated_at,
+//     };
+//   }
+// }
 import {
   Body,
   Controller,
@@ -9,46 +115,56 @@ import {
   Res,
   UseGuards,
   UnauthorizedException,
+  UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { AuthGuard } from './auth.guard';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiBody,
+} from '@nestjs/swagger';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public } from './public.decorator';
-import { Response } from 'express';
-import { LoginDto, RegisterDto } from './dto/auth.dto';
+import { LoginDto, RegisterDto, LoginResponseDto, UserProfileDto } from './dto/auth.dto';
+import { AuthGuard } from './auth.guard';
 
+@ApiTags('Authentication')
+@UsePipes(new ValidationPipe({ transform: true }))
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
-  @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(
-    @Body(new ValidationPipe({ transform: true })) signInDto: LoginDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'User login' })
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({ status: 200, description: 'Login successful', type: LoginResponseDto })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  signIn(@Body() signInDto: LoginDto, @Res({ passthrough: true }) res: Response) {
     return this.authService.signIn(signInDto.username, signInDto.password, res);
   }
 
   @Public()
-  @HttpCode(HttpStatus.OK)
   @Post('register')
-  register(
-    @Body(new ValidationPipe({ transform: true })) registerDto: RegisterDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    return this.authService.register(
-      registerDto.username,
-      registerDto.password,
-      registerDto.email,
-      res,
-    );
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'User registration' })
+  @ApiBody({ type: RegisterDto })
+  @ApiResponse({ status: 201, description: 'User registered successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  register(@Body() registerDto: RegisterDto, @Res({ passthrough: true }) res: Response) {
+    return this.authService.register(registerDto.username, registerDto.password, registerDto.email, res);
   }
 
   @Public()
-  @HttpCode(HttpStatus.OK)
   @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiResponse({ status: 200, description: 'Token refreshed' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   refreshTokens(@Request() req, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
     if (!refreshToken) {
@@ -58,8 +174,11 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.OK)
   @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'User logout' })
+  @ApiResponse({ status: 200, description: 'Logged out' })
   logout(@Request() req, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
     return this.authService.logout(refreshToken, req.user.sub, res);
@@ -67,14 +186,11 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get('profile')
-  async getProfile(@Request() req) {
-    const user = await this.authService.getUserProfile(req.user.sub);
-    return {
-      user_id: user.user_id,
-      username: user.username,
-      email: user.email,
-      created_at: user.created_at,
-      updated_at: user.updated_at,
-    };
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get user profile' })
+  @ApiResponse({ status: 200, description: 'User profile', type: UserProfileDto })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getProfile(@Request() req): Promise<UserProfileDto> {
+    return this.authService.getUserProfile(req.user.sub);
   }
 }
