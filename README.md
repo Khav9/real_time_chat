@@ -96,3 +96,14 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+
+
+## env in production
+NODE_ENV=production
+DB_HOST=dpg-abc123-hostname
+DB_PORT=5432
+DB_USERNAME=real_time_chat_user
+DB_PASSWORD=yourStrongPassword
+DB_NAME=real_time_chat_db
+DB_SYNCHRONIZE=false

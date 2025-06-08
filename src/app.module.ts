@@ -9,22 +9,26 @@ import { RefreshToken } from './typeorm/entities/RefreshToken';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // ✅ Makes env config available across all modules
+      isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'mysql',
-        host: config.get<string>('DB_HOST'),
-        port: config.get<number>('DB_PORT'),
-        username: config.get<string>('DB_USERNAME'),
-        password: config.get<string>('DB_PASSWORD'),
-        database: config.get<string>('DB_NAME'),
-        entities: [User, RefreshToken],
-        autoLoadEntities: true,
-        synchronize: true, // ⚠️ Use only in development
-      }),
+      useFactory: (config: ConfigService) => {
+        const isProduction = config.get<string>('NODE_ENV') === 'production';
+
+        return {
+          type: isProduction ? 'postgres' : 'mysql',
+          host: config.get<string>('DB_HOST'),
+          port: config.get<number>('DB_PORT'),
+          username: config.get<string>('DB_USERNAME'),
+          password: config.get<string>('DB_PASSWORD'),
+          database: config.get<string>('DB_NAME'),
+          entities: [User, RefreshToken],
+          autoLoadEntities: true,
+          synchronize: config.get<boolean>('DB_SYNCHRONIZE'),
+        };
+      },
     }),
     AuthModule,
     UsersModule,
