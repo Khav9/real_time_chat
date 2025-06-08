@@ -7,8 +7,10 @@ import {
   Index,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from './User';
+import { Channel } from './Channel';
 
 @Entity({ name: 'servers' })
 export class Server {
@@ -31,4 +33,7 @@ export class Server {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updated_at: Date;
+
+  @OneToMany(() => Channel, (channel) => channel.server_id)
+  channels: Channel[];
 }
