@@ -71,3 +71,8 @@ export class UserProfileDto {
   @ApiProperty()
   updated_at: Date;
 }
+
+export class RefreshTokenDto {
+  @ApiProperty({ example: 'refresh-token-xyz' })
+  refreshToken: string;
+}

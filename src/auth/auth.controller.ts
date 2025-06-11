@@ -27,6 +27,7 @@ import {
   RegisterDto,
   LoginResponseDto,
   UserProfileDto,
+  RefreshTokenDto,
 } from './dto/auth.dto';
 import { AuthGuard } from './auth.guard';
 
@@ -77,7 +78,8 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token' })
-  @ApiResponse({ status: 200, description: 'Token refreshed' })
+  @ApiBody({ type: RefreshTokenDto })
+  @ApiResponse({ status: 200, description: 'Token refreshed', type: LoginResponseDto })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   refreshTokens(@Request() req, @Res({ passthrough: true }) res: Response) {
     const refreshToken =
