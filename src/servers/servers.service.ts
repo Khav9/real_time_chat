@@ -3,12 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Server } from '../typeorm/entities/Server';
 import { CreateServerDto } from './dto/server.dto';
+import { ChannelsService } from '../channels/channels.service';
+import { ChannelType } from '../typeorm/entities/Channel';
 
 @Injectable()
 export class ServersService {
   constructor(
     @InjectRepository(Server)
     private serversRepository: Repository<Server>,
+    private channelsService: ChannelsService,
   ) {}
 
   async create(
@@ -19,7 +22,20 @@ export class ServersService {
       ...createServerDto,
       owner_id: ownerId,
     });
-    return this.serversRepository.save(server);
+    const savedServer = await this.serversRepository.save(server);
+
+    // Create default channels
+    await this.channelsService.create(savedServer.server_id, {
+      name: 'Welcome and Role',
+      type: ChannelType.TEXT,
+    });
+
+    await this.channelsService.create(savedServer.server_id, {
+      name: 'General',
+      type: ChannelType.TEXT,
+    });
+
+    return savedServer;
   }
 
   async findAll(): Promise<Server[]> {
@@ -77,7 +93,7 @@ export class ServersService {
     return this.serversRepository.find({
       where: { owner_id: ownerId },
       relations: {
-        owner: true,
+        owner: false, // Exclude owner relation for this query
       },
       select: {
         server_id: true,
@@ -85,13 +101,6 @@ export class ServersService {
         owner_id: true,
         created_at: true,
         updated_at: true,
-        owner: {
-          user_id: true,
-          username: true,
-          email: true,
-          created_at: true,
-          updated_at: true,
-        },
       },
     });
   }

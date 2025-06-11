@@ -31,12 +31,14 @@ export class ChannelsController {
   @ApiResponse({
     status: 201,
     description: 'Channel created successfully',
-    type: CreateChannelResponseDto,
   })
   async create(
     @Param('serverId', ParseIntPipe) serverId: number,
     @Body() createChannelDto: CreateChannelDto,
-  ): Promise<CreateChannelResponseDto> {
+  ): Promise<{
+    message: string;
+    statusCode: number;
+  }> {
     const channel = await this.channelsService.create(
       serverId,
       createChannelDto,
@@ -44,7 +46,6 @@ export class ChannelsController {
     return {
       message: 'Channel created successfully',
       statusCode: 201,
-      data: channel,
     };
   }
 
