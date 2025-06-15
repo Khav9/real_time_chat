@@ -49,6 +49,7 @@ export class MessagesService {
     });
 
     return messages.map((message) => ({
+      message_id: message.message_id,
       content: message.content,
       created_at: message.created_at,
       updated_at: message.updated_at,

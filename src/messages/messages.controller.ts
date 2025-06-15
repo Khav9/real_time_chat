@@ -119,10 +119,14 @@ export class MessagesController {
     status: 404,
     description: 'Message not found',
   })
-  remove(
+  async remove(
     @Param('channelId', ParseIntPipe) channelId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.messagesService.remove(id);
+    await this.messagesService.remove(id);
+    return {
+      message: 'Message deleted successfully',
+      statusCode: 200,
+    };
   }
 }
