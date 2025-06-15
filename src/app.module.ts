@@ -10,6 +10,7 @@ import { RefreshToken } from './typeorm/entities/RefreshToken';
 import { Server } from './typeorm/entities/Server';
 import { Channel } from './typeorm/entities/Channel';
 import { MessagesModule } from './messages/messages.module';
+import { ServerMembersModule } from './server_members/server_members.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { MessagesModule } from './messages/messages.module';
     ServersModule,
     ChannelsModule,
     MessagesModule,
+    ServerMembersModule,
   ],
 })
 export class AppModule {}

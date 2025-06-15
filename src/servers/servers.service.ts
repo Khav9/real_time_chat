@@ -5,6 +5,7 @@ import { Server } from '../typeorm/entities/Server';
 import { CreateServerDto } from './dto/server.dto';
 import { ChannelsService } from '../channels/channels.service';
 import { ChannelType } from '../typeorm/entities/Channel';
+import { ServerMembersService } from '../server_members/server_members.service';
 
 @Injectable()
 export class ServersService {
@@ -12,6 +13,7 @@ export class ServersService {
     @InjectRepository(Server)
     private serversRepository: Repository<Server>,
     private channelsService: ChannelsService,
+    private serverMembersService: ServerMembersService,
   ) {}
 
   async create(
@@ -90,10 +92,11 @@ export class ServersService {
   }
 
   async findByOwnerId(ownerId: number): Promise<Server[]> {
-    return this.serversRepository.find({
+    // Get servers owned by the user
+    const ownedServers = await this.serversRepository.find({
       where: { owner_id: ownerId },
       relations: {
-        owner: false, // Exclude owner relation for this query
+        owner: false,
       },
       select: {
         server_id: true,
@@ -103,6 +106,29 @@ export class ServersService {
         updated_at: true,
       },
     });
+
+    // Get servers where user is a member
+    const memberServers = await this.serversRepository
+      .createQueryBuilder('server')
+      .innerJoin(
+        'server_members',
+        'member',
+        'member.server_id = server.server_id',
+      )
+      .where('member.user_id = :userId', { userId: ownerId })
+      .andWhere('server.owner_id != :userId', { userId: ownerId })
+      .select([
+        'server.server_id',
+        'server.name',
+        'server.owner_id',
+        'server.created_at',
+        'server.updated_at',
+      ])
+      .getMany();
+
+    // Combine both arrays and remove duplicates
+    const allServers = [...ownedServers, ...memberServers];
+    return allServers;
   }
 
   async update(id: number, updateServerDto: CreateServerDto): Promise<Server> {

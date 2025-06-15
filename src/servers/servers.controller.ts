@@ -70,10 +70,10 @@ export class ServersController {
 
   @Get('my-servers')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get all servers owned by the current user' })
+  @ApiOperation({ summary: 'Get all own servers and servers where the user is a member' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Return all servers owned by the current user.',
+    description: 'Return all own servers and servers where the user is a member.',
     type: ServerListResponseDto,
   })
   async findMyServers(@Request() req) {
