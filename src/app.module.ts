@@ -11,6 +11,7 @@ import { Server } from './typeorm/entities/Server';
 import { Channel } from './typeorm/entities/Channel';
 import { MessagesModule } from './messages/messages.module';
 import { ServerMembersModule } from './server_members/server_members.module';
+import { ServerMember } from './typeorm/entities/ServerMember';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { ServerMembersModule } from './server_members/server_members.module';
           username: config.get<string>('DB_USERNAME'),
           password: config.get<string>('DB_PASSWORD'),
           database: config.get<string>('DB_NAME'),
-          entities: [User, RefreshToken, Server, Channel],
+          entities: [User, RefreshToken, Server, Channel, ServerMember],
           autoLoadEntities: true,
           synchronize: config.get<boolean>('DB_SYNCHRONIZE'),
         };
