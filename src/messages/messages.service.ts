@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message } from 'src/typeorm/entities/message.entity';
@@ -62,14 +62,23 @@ export class MessagesService {
   async update(
     id: number,
     updateMessageDto: UpdateMessageDto,
+    user: User,
   ): Promise<Message> {
     const message = await this.findOne(id);
+    //check if the message is owned by the user
+    if (message.user_id !== user.user_id) {
+      throw new ForbiddenException('You are not allowed to update this message');
+    }
     Object.assign(message, updateMessageDto);
     return await this.messagesRepository.save(message);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, user: User): Promise<void> {
     const message = await this.findOne(id);
+    //check if the message is owned by the user
+    if (message.user_id !== user.user_id) {
+      throw new ForbiddenException('You are not allowed to delete this message');
+    }
     await this.messagesRepository.remove(message);
   }
 }

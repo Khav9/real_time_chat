@@ -197,6 +197,14 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    return user;
+    // return user.username, email, created_at, updated_at
+    // Note: Adjust the return type as per your UserProfileDto definition
+    return {
+      user_id: user.user_id,
+      username: user.username,
+      email: user.email,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+    };
   }
 }

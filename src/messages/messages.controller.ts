@@ -97,8 +97,13 @@ export class MessagesController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateMessageDto: UpdateMessageDto,
+    @Request() req,
   ) {
-    await this.messagesService.update(id, updateMessageDto);
+    const user: Partial<User> = {
+      user_id: req.user.sub,
+      username: req.user.username,
+    };
+    await this.messagesService.update(id, updateMessageDto, user as User);
     return {
       message: 'Message updated successfully',
       statusCode: 200,
@@ -122,8 +127,13 @@ export class MessagesController {
   async remove(
     @Param('channelId', ParseIntPipe) channelId: number,
     @Param('id', ParseIntPipe) id: number,
+    @Request() req,
   ) {
-    await this.messagesService.remove(id);
+    const user: Partial<User> = {
+      user_id: req.user.sub,
+      username: req.user.username,
+    };
+    await this.messagesService.remove(id, user as User);
     return {
       message: 'Message deleted successfully',
       statusCode: 200,
